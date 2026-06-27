@@ -29,15 +29,7 @@
       [
         "expo-widgets",
         {
-          "frequentUpdates": true,
-          "widgets": [
-            {
-              "name": "WorkoutActivity",
-              "displayName": "FitKoç Workout",
-              "description": "Antrenman detaylarını gösterir.",
-              "supportedFamilies": ["systemSmall"]
-            }
-          ]
+          "frequentUpdates": true
         }
       ]
     ],
