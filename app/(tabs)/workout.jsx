@@ -1,10 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, ScrollView, Pressable, Modal, TouchableOpacity, TextInput } from 'react-native';
-let notifee = null;
-if (Platform.OS === 'android') {
-  notifee = require('@notifee/react-native').default;
+
+let Notifications = null;
+try {
+  Notifications = require('expo-notifications');
+} catch (e) {
+  console.log('expo-notifications yüklenemedi:', e);
 }
-import WorkoutActivity from '../../widgets/workout-activity';
+
+let WorkoutActivity = null;
+if (Platform.OS === 'ios') {
+  try {
+    WorkoutActivity = require('../../widgets/workout-activity').default;
+  } catch (e) {
+    console.log('WorkoutActivity yüklenemedi:', e);
+  }
+}
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Dumbbell, Plus, ArrowRight, Zap, Target, Calendar, ChevronRight, ChevronDown, Activity, X, Info, Search, Trash2, CheckCircle2, Play, Square, Timer } from 'lucide-react-native';
 import { useUser } from '../../context/UserContext';
@@ -131,21 +142,17 @@ export default function WorkoutScreen() {
       const formatted = formatTime(workoutDuration);
       if (Platform.OS === 'ios') {
         // iOS Live Activity uses native SwiftUI timer, no need to push updates every second.
-      } else if (Platform.OS === 'android') {
-        notifee.displayNotification({
-          id: 'workout_notification',
-          title: 'Antrenman Aktif',
-          body: `Süre: ${formatted}`,
-          android: {
-            channelId: 'workout',
-            asForegroundService: true,
-            ongoing: true,
-            onlyAlertOnce: true,
-          },
-        }).catch(e => console.warn(e));
+      } else if (Platform.OS === 'android' && Notifications) {
+        Notifications.setNotificationHandler({
+          handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: false,
+            shouldSetBadge: false,
+          }),
+        });
       }
     }
-  }, [workoutDuration, isWorkoutActive]);
+  }, [isWorkoutActive]);
 
   const prog = selectedProgram ? (PROGRAMS[selectedProgram] || customPrograms[selectedProgram]) : null;
 
@@ -215,29 +222,29 @@ export default function WorkoutScreen() {
     setIsWorkoutActive(true);
     setWorkoutDuration(0);
 
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'ios' && WorkoutActivity) {
       try {
         liveActivityRef.current = WorkoutActivity.start({ title: 'Antrenman Aktif', startTimestamp: Date.now() });
       } catch (e) {
         console.warn('Live Activity başlatılamadı:', e);
       }
-    } else if (Platform.OS === 'android') {
-      await notifee.requestPermission();
-      const channelId = await notifee.createChannel({
-        id: 'workout',
-        name: 'Antrenman Süreci',
-      });
-      await notifee.displayNotification({
-        id: 'workout_notification',
-        title: 'Antrenman Aktif',
-        body: 'Süre: 00:00',
-        android: {
-          channelId,
-          asForegroundService: true,
-          ongoing: true,
-          onlyAlertOnce: true,
-        },
-      });
+    } else if (Platform.OS === 'android' && Notifications) {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status === 'granted') {
+        await Notifications.setNotificationChannelAsync('workout', {
+          name: 'Antrenman Süreci',
+          importance: Notifications.AndroidImportance.HIGH,
+        });
+        await Notifications.scheduleNotificationAsync({
+          identifier: 'workout_notification',
+          content: {
+            title: 'Antrenman Aktif 💪',
+            body: 'Antrenmanınız devam ediyor...',
+            sticky: true,
+          },
+          trigger: null,
+        });
+      }
     }
 
     timerRef.current = setInterval(() => setWorkoutDuration(d => d + 1), 1000);
@@ -258,8 +265,8 @@ export default function WorkoutScreen() {
           console.warn('Live Activity sonlandırılamadı:', e);
         }
       }
-    } else if (Platform.OS === 'android') {
-      await notifee.stopForegroundService();
+    } else if (Platform.OS === 'android' && Notifications) {
+      await Notifications.dismissNotificationAsync('workout_notification');
     }
   };
 
