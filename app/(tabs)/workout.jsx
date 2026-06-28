@@ -1,6 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Platform, ScrollView, Pressable, Modal, TouchableOpacity, TextInput, Alert } from 'react-native';
-import * as Notifications from 'expo-notifications';
+
+// expo-notifications Expo Go'dan SDK 53 ile kaldırıldı.
+// Lazy require ile sadece native build'de yüklenir, Expo Go'da null kalır.
+let Notifications = null;
+try {
+  Notifications = require('expo-notifications');
+} catch (e) {
+  // Expo Go — notifications modülü yok, sessizce devam et
+}
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Dumbbell, Plus, ArrowRight, Zap, Target, Calendar, ChevronRight, ChevronDown, Activity, X, Info, Search, Trash2, CheckCircle2, Play, Square, Timer } from 'lucide-react-native';
@@ -125,7 +133,7 @@ export default function WorkoutScreen() {
   }, []);
 
   useEffect(() => {
-    if (isWorkoutActive && Platform.OS === 'android') {
+    if (isWorkoutActive && Platform.OS === 'android' && Notifications) {
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
           shouldShowAlert: true,
@@ -204,7 +212,7 @@ export default function WorkoutScreen() {
     setIsWorkoutActive(true);
     setWorkoutDuration(0);
 
-    if (Platform.OS === 'android') {
+    if (Platform.OS === 'android' && Notifications) {
       try {
         const { status } = await Notifications.requestPermissionsAsync();
         if (status === 'granted') {
@@ -248,7 +256,7 @@ export default function WorkoutScreen() {
     }
     setWorkoutDuration(0);
 
-    if (Platform.OS === 'android') {
+    if (Platform.OS === 'android' && Notifications) {
       try {
         await Notifications.dismissNotificationAsync('workout_notification');
       } catch (e) {
