@@ -155,7 +155,7 @@ export default function RemindersModal({ visible, onClose }) {
             />
           </View>
 
-          <Pressable style={styles.testBtn} onPress={handleTest}>
+          <Pressable style={[styles.testBtn, { backgroundColor: colors.iconBg, borderColor: colors.border }]} onPress={handleTest}>
             <Text style={styles.testBtnText}>Test Bildirimi Gönder (5 sn)</Text>
           </Pressable>
 

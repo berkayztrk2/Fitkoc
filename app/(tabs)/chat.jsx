@@ -1,26 +1,57 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, Pressable, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Bot, Send, User, ChevronLeft } from 'lucide-react-native';
+import { Bot, Send, User, ChevronLeft, Trash2 } from 'lucide-react-native';
 import { useTheme } from '../../context/ThemeContext';
 import { useUser } from '../../context/UserContext';
 import { askCoach } from '../../lib/claude';
 import { ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const CHAT_KEY = 'fitkoc-chat-history';
 
 export default function ChatScreen() {
   const { colors } = useTheme();
   const { profile } = useUser();
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'bot',
-      text: `Merhaba ${profile?.gender === 'female' ? 'Kraliçe' : 'Şampiyon'}! Bugün nasıl hissediyorsun? Antrenman veya beslenme ile ilgili her sorunu cevaplayabilirim.`
-    }
-  ]);
+
+  const greeting = () => ({
+    id: 1,
+    sender: 'bot',
+    text: `Merhaba ${profile?.name || (profile?.gender === 'female' ? 'Kraliçe' : 'Şampiyon')}! Bugün nasıl hissediyorsun? Antrenman veya beslenme ile ilgili her sorunu cevaplayabilirim.`
+  });
+
+  const [messages, setMessages] = useState([greeting()]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const scrollViewRef = useRef();
+
+  // Geçmişi yükle
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(CHAT_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          if (Array.isArray(saved) && saved.length > 0) setMessages(saved);
+        }
+      } catch {}
+      setLoaded(true);
+    })();
+  }, []);
+
+  // Geçmişi kaydet
+  useEffect(() => {
+    if (!loaded) return;
+    AsyncStorage.setItem(CHAT_KEY, JSON.stringify(messages)).catch(() => {});
+  }, [messages, loaded]);
+
+  const clearChat = () => {
+    const fresh = [greeting()];
+    setMessages(fresh);
+    AsyncStorage.setItem(CHAT_KEY, JSON.stringify(fresh)).catch(() => {});
+  };
 
   useEffect(() => {
     const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setKeyboardVisible(true));
@@ -93,6 +124,11 @@ export default function ChatScreen() {
               <Text style={styles.status}>Çevrimiçi</Text>
             </View>
           </View>
+          {messages.length > 1 && (
+            <Pressable onPress={clearChat} style={{ padding: 8 }} hitSlop={8}>
+              <Trash2 size={20} color={colors.textSub} />
+            </Pressable>
+          )}
         </View>
 
         {/* Chat Area */}

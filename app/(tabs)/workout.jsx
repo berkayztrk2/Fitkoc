@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Platform, ScrollView, Pressable, Modal, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Platform, ScrollView, Pressable, Modal, TouchableOpacity, TextInput, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -83,10 +83,11 @@ const formatTime = (secs) => {
 };
 
 export default function WorkoutScreen() {
-  const { 
-    selectedProgram, setSelectedProgram, 
+  const {
+    selectedProgram, setSelectedProgram,
     todaySession, recordSet,
-    customPrograms, saveCustomProgram
+    customPrograms, saveCustomProgram,
+    addXP, addFatigue, addBurnedCal
   } = useUser();
   const { colors, isDark } = useTheme();
 
@@ -203,14 +204,7 @@ export default function WorkoutScreen() {
     setIsWorkoutActive(true);
     setWorkoutDuration(0);
 
-    if (Platform.OS === 'ios') {
-      try {
-        const WorkoutActivityModule = require('../../widgets/workout-activity').default;
-        liveActivityRef.current = WorkoutActivityModule.start({ title: 'Antrenman Aktif', startTimestamp: Date.now() });
-      } catch (e) {
-        console.warn('Live Activity başlatılamadı:', e);
-      }
-    } else if (Platform.OS === 'android') {
+    if (Platform.OS === 'android') {
       try {
         const { status } = await Notifications.requestPermissionsAsync();
         if (status === 'granted') {
@@ -242,22 +236,47 @@ export default function WorkoutScreen() {
     if(restTimerRef.current) clearInterval(restTimerRef.current);
     setRestTimeLeft(0);
 
-    if (Platform.OS === 'ios') {
-      if (liveActivityRef.current) {
-        try {
-          await liveActivityRef.current.end('default');
-          liveActivityRef.current = null;
-        } catch (e) {
-          console.warn('Live Activity sonlandırılamadı:', e);
-        }
-      }
-    } else if (Platform.OS === 'android') {
+    // Süreye göre yakılan kalori (~6 kal/dk, kuvvet antrenmanı için makul tahmin)
+    const minutes = workoutDuration / 60;
+    const burned = Math.round(minutes * 6);
+    if (burned > 0) {
+      addBurnedCal(burned);
+      Alert.alert(
+        'Antrenman Tamamlandı 💪',
+        `Süre: ${formatTime(workoutDuration)}\nYaktığın kalori: ~${burned} kal\n\nBu kalori bugünkü "hak ettiğin" kaloriye eklendi.`
+      );
+    }
+    setWorkoutDuration(0);
+
+    if (Platform.OS === 'android') {
       try {
         await Notifications.dismissNotificationAsync('workout_notification');
       } catch (e) {
         console.warn('Bildirim kapatılamadı:', e);
       }
     }
+  };
+
+  // Tamamlanan bir setin çalıştırdığı kaslara rol bazlı XP + yorgunluk verir,
+  // ve tahmini yakılan kaloriyi günlüğe ekler.
+  const awardForCompletedSet = (exId, reps) => {
+    const ex = EXERCISES[exId];
+    if (!ex) return;
+    const byRole = { primary: [], secondary: [], stabilizer: [] };
+    const collect = (side) => {
+      if (!side) return;
+      Object.entries(side).forEach(([muscle, role]) => {
+        if (byRole[role]) byRole[role].push(muscle);
+      });
+    };
+    collect(ex.front);
+    collect(ex.back);
+
+    if (byRole.primary.length) addXP(byRole.primary, 15);
+    if (byRole.secondary.length) addXP(byRole.secondary, 8);
+    if (byRole.stabilizer.length) addXP(byRole.stabilizer, 4);
+    if (byRole.primary.length) addFatigue(byRole.primary, 12);
+    // Yakılan kalori antrenman bitince süreye göre kredilenir (endWorkout).
   };
 
   const handleCompleteSet = (exId, setIdx, targetReps, defaultRest) => {
@@ -268,15 +287,20 @@ export default function WorkoutScreen() {
     // Extract purely numbers from targetReps if it's a string like "8-10" or "45sn". We'll just take the first number as a default.
     let parsedTarget = 10;
     if (typeof targetReps === 'string') {
-       const match = targetReps.match(/d+/);
+       const match = targetReps.match(/\d+/);
        if (match) parsedTarget = parseInt(match[0], 10);
     } else if (typeof targetReps === 'number') {
        parsedTarget = targetReps;
     }
-    
+
     const reps = inputValues[rKey] || String(parsedTarget);
-    
-    recordSet(exId, setIdx, { weight: parseFloat(weight), reps: parseInt(reps, 10) });
+    const w = parseFloat(weight) || 0;
+    const r = parseInt(reps, 10) || 0;
+
+    recordSet(exId, setIdx, { weight: w, reps: r });
+
+    // Tamamlanan sete göre kas XP'si, yorgunluk ve yakılan kaloriyi işle
+    awardForCompletedSet(exId, r);
 
     // Start rest timer
     setRestTimeLeft(defaultRest || 60);

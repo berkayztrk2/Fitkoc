@@ -97,7 +97,7 @@ function MacroBar({ label, current, target, color }) {
 
 export default function HomeDashboard() {
   const router = useRouter();
-  const { profile, derived, consumed, meals, addMeal, removeMeal, waterMl, burnedCal, addWater, resetWater } = useUser();
+  const { profile, derived, consumed, meals, addMeal, updateMeal, removeMeal, waterMl, burnedCal, addWater, resetWater } = useUser();
   const { colors } = useTheme();
 
   const [showTimeMachine, setShowTimeMachine] = useState(false);
@@ -113,9 +113,27 @@ export default function HomeDashboard() {
   const [mealCarb, setMealCarb] = useState('');
   const [mealFat, setMealFat] = useState('');
   const [selectedMealType, setSelectedMealType] = useState('Sabah');
+  const [editingMealId, setEditingMealId] = useState(null);
+
+  const resetMealFields = () => {
+    setMealName(''); setMealCal(''); setMealPro(''); setMealCarb(''); setMealFat('');
+  };
 
   const handleOpenMealModal = (type) => {
+    setEditingMealId(null);
+    resetMealFields();
     setSelectedMealType(type);
+    setShowMealModal(true);
+  };
+
+  const handleEditMeal = (m) => {
+    setEditingMealId(m.id);
+    setMealName(m.name || '');
+    setMealCal(m.calories != null ? String(m.calories) : '');
+    setMealPro(m.protein != null ? String(m.protein) : '');
+    setMealCarb(m.carbs != null ? String(m.carbs) : '');
+    setMealFat(m.fat != null ? String(m.fat) : '');
+    setSelectedMealType(m.type || 'Ara Öğün');
     setShowMealModal(true);
   };
 
@@ -129,7 +147,9 @@ export default function HomeDashboard() {
   const { targetCal, macros, water, goalInfo } = derived;
   const waterL = (waterMl / 1000).toFixed(1);
   const waterFilled = Math.round(waterMl / (water * 1000 / 7));
-  const remaining = Math.max(0, targetCal - consumed.calories);
+  // Antrenmanla yakılan kalori, günlük "hak edilen" kaloriyi artırır.
+  const earnedTarget = targetCal + (burnedCal || 0);
+  const remaining = Math.max(0, earnedTarget - consumed.calories);
 
   // 1 kg yağ yaklaşık 7700 kaloridir.
   const dailyDeficit = targetCal - derived.tdee;
@@ -138,31 +158,35 @@ export default function HomeDashboard() {
 
   const handleSaveMeal = () => {
     if(!mealName || !mealCal) return;
-    addMeal({
+    const payload = {
       name: mealName,
       calories: parseInt(mealCal, 10) || 0,
       protein: parseInt(mealPro, 10) || 0,
       carbs: parseInt(mealCarb, 10) || 0,
       fat: parseInt(mealFat, 10) || 0,
       type: selectedMealType,
-    });
-    setMealName('');
-    setMealCal('');
-    setMealPro('');
-    setMealCarb('');
-    setMealFat('');
+    };
+    if (editingMealId != null) {
+      updateMeal(editingMealId, payload);
+    } else {
+      addMeal(payload);
+    }
+    setEditingMealId(null);
+    resetMealFields();
     setShowMealModal(false);
   };
 
-  const MealRow = ({ id, icon, name, sub, cal }) => (
+  const MealRow = ({ id, icon, name, sub, cal, onEdit }) => (
     <View style={[styles.mealRow, { borderBottomColor: colors.border }]}>
-      <View style={[styles.mealIconBg, { backgroundColor: colors.iconBg }]}>
-        <Text style={styles.mealIconText}>{icon}</Text>
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.mealName, { color: colors.text }]}>{name}</Text>
-        <Text style={[styles.mealSub, { color: colors.textSub }]}>{sub}</Text>
-      </View>
+      <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }} onPress={onEdit}>
+        <View style={[styles.mealIconBg, { backgroundColor: colors.iconBg }]}>
+          <Text style={styles.mealIconText}>{icon}</Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.mealName, { color: colors.text }]}>{name}</Text>
+          <Text style={[styles.mealSub, { color: colors.textSub }]}>{sub}</Text>
+        </View>
+      </Pressable>
       <View style={{ alignItems: 'flex-end' }}>
         <Text style={[styles.mealCal, { color: colors.text }]}>{cal} <Text style={{fontSize: 11, color: colors.textSub}}>kal</Text></Text>
         <Pressable onPress={() => removeMeal(id)} style={{ padding: 4, marginTop: 4 }}>
@@ -177,7 +201,7 @@ export default function HomeDashboard() {
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <View>
           <Text style={[styles.dateLabel, { color: colors.textSub }]}>BUGÜN</Text>
-          <Text style={[styles.greeting, { color: colors.text }]}>Merhaba</Text>
+          <Text style={[styles.greeting, { color: colors.text }]}>Merhaba{profile.name ? `, ${profile.name}` : ''}</Text>
         </View>
         <Pressable style={[styles.profileBtn, { backgroundColor: colors.iconBg, overflow: 'hidden' }]} onPress={() => router.push('/profile')}>
           {profile.avatarUri ? (
@@ -195,9 +219,12 @@ export default function HomeDashboard() {
           <View style={styles.calorieRow}>
             <View>
               <Text style={[styles.calorieCurrent, { color: colors.text }]}>{consumed.calories.toLocaleString('tr-TR')}</Text>
-              <Text style={[styles.calorieTarget, { color: colors.textSub }]}>/ {targetCal.toLocaleString('tr-TR')} kalori</Text>
+              <Text style={[styles.calorieTarget, { color: colors.textSub }]}>/ {earnedTarget.toLocaleString('tr-TR')} kalori</Text>
+              {burnedCal > 0 && (
+                <Text style={{ fontSize: 12, color: '#FF6B35', fontWeight: '700', marginTop: 2 }}>+{burnedCal} kal antrenmandan kazanıldı</Text>
+              )}
             </View>
-            <CalorieRing consumed={consumed.calories} target={targetCal} size={110} />
+            <CalorieRing consumed={consumed.calories} target={earnedTarget} size={110} />
           </View>
           
           <MacroBar label="Protein" current={consumed.protein} target={macros.protein} color="#00AAFF" />
@@ -236,6 +263,14 @@ export default function HomeDashboard() {
             </View>
             
             <View style={styles.waterButtons}>
+              <Pressable
+                style={[styles.waterBtn, { backgroundColor: colors.iconBg, flex: 0, paddingHorizontal: 12 }]}
+                onPress={() => addWater(-250)}
+                onLongPress={resetWater}
+                disabled={waterMl <= 0}
+              >
+                <Text style={[styles.waterBtnText, { color: waterMl <= 0 ? colors.textSub : '#FF3B3B' }]}>−250</Text>
+              </Pressable>
               <Pressable style={[styles.waterBtn, { backgroundColor: colors.iconBg }]} onPress={() => addWater(250)}>
                 <Text style={[styles.waterBtnText, { color: colors.text }]}>+250</Text>
               </Pressable>
@@ -306,13 +341,14 @@ export default function HomeDashboard() {
                   </Pressable>
                 ) : (
                   items.map((m) => (
-                    <MealRow 
-                      key={m.id} 
+                    <MealRow
+                      key={m.id}
                       id={m.id}
-                      icon="🍽️" 
-                      name={m.name} 
-                      sub={`${m.protein || 0}g P | ${m.carbs || 0}g K | ${m.fat || 0}g Y`} 
-                      cal={m.calories} 
+                      icon="🍽️"
+                      name={m.name}
+                      sub={`${m.protein || 0}g P | ${m.carbs || 0}g K | ${m.fat || 0}g Y`}
+                      cal={m.calories}
+                      onEdit={() => handleEditMeal(m)}
                     />
                   ))
                 )}
@@ -377,8 +413,8 @@ export default function HomeDashboard() {
         <View style={styles.modalOverlay}>
           <View style={[styles.mealModalContent, { backgroundColor: colors.background, borderColor: colors.border }]}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <Text style={[styles.modalTitle, { color: colors.text, padding: 0, marginBottom: 0 }]}>Öğün Ekle</Text>
-              <Pressable onPress={() => setShowMealModal(false)} style={{ padding: 4 }}>
+              <Text style={[styles.modalTitle, { color: colors.text, padding: 0, marginBottom: 0 }]}>{editingMealId != null ? 'Öğünü Düzenle' : 'Öğün Ekle'}</Text>
+              <Pressable onPress={() => { setShowMealModal(false); setEditingMealId(null); }} style={{ padding: 4 }}>
                 <X size={24} color={colors.textSub} />
               </Pressable>
             </View>
@@ -429,7 +465,7 @@ export default function HomeDashboard() {
             </View>
 
             <Pressable style={styles.primaryBtn} onPress={handleSaveMeal}>
-              <Text style={styles.primaryBtnText}>Manuel Kaydet</Text>
+              <Text style={styles.primaryBtnText}>{editingMealId != null ? 'Güncelle' : 'Manuel Kaydet'}</Text>
             </Pressable>
 
             <Text style={{ textAlign: 'center', marginVertical: 12, color: colors.textSub, fontWeight: '600' }}>VEYA</Text>
@@ -579,7 +615,7 @@ const styles = StyleSheet.create({
   tipText: { color: '#CCC', fontSize: 14, lineHeight: 22 },
 
   fab: {
-    position: 'absolute', bottom: 100, right: 24, width: 64, height: 64, borderRadius: 32,
+    position: 'absolute', bottom: Platform.OS === 'ios' ? 124 : 108, right: 24, width: 64, height: 64, borderRadius: 32,
     backgroundColor: '#FF6B35', justifyContent: 'center', alignItems: 'center',
     shadowColor: '#FF6B35', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16, elevation: 10
   },

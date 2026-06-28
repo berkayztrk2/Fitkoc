@@ -12,6 +12,11 @@ const LOG_KEY = 'fitkoc-workout-log'
 const PROG_KEY = 'fitkoc-selected-program'
 const CUSTOM_KEY = 'fitkoc-custom-programs'
 const XP_KEY = 'fitkoc-muscle-xp'
+const DAILY_KEY = 'fitkoc-daily'           // Güne özel beslenme/su/yakılan (tarih damgalı)
+const LAST_TARGET_KEY = 'fitkoc-last-target' // Dünün kalori hedefi (denge hesabı için)
+const WEIGHT_HIST_KEY = 'fitkoc-weight-history'
+
+const todayStr = () => new Date().toISOString().slice(0, 10)
 
 export function UserProvider({ children }) {
   const [isReady, setIsReady] = useState(false)
@@ -31,6 +36,7 @@ export function UserProvider({ children }) {
   const [streak, setStreak] = useState(0)
   const [lastStreakDate, setLastStreakDate] = useState(null)
   const [unlockedBadges, setUnlockedBadges] = useState([])
+  const [weightHistory, setWeightHistory] = useState([])
 
   // Türetilmiş Değerler
   const derived = useMemo(() => {
@@ -77,7 +83,10 @@ export function UserProvider({ children }) {
           XP_KEY,
           'fitkoc-streak',
           'fitkoc-streak-date',
-          'fitkoc-badges'
+          'fitkoc-badges',
+          DAILY_KEY,
+          LAST_TARGET_KEY,
+          WEIGHT_HIST_KEY
         ]
 
         const pairs = await AsyncStorage.multiGet(keys)
@@ -106,7 +115,33 @@ export function UserProvider({ children }) {
         if (rawStreak) setStreak(Number(rawStreak))
         if (rawStreakDate) setLastStreakDate(rawStreakDate)
         if (rawBadges) setUnlockedBadges(JSON.parse(rawBadges))
-        
+
+        // Güne özel veriler (öğün/su/yakılan) — gün dönümünde sıfırla
+        const rawDaily = data[DAILY_KEY]
+        const today = todayStr()
+        if (rawDaily) {
+          try {
+            const d = JSON.parse(rawDaily)
+            if (d && d.date === today) {
+              // Aynı gün: kaldığın yerden devam
+              setMeals(Array.isArray(d.meals) ? d.meals : [])
+              setWaterMl(Number(d.waterMl) || 0)
+              setBurnedCal(Number(d.burnedCal) || 0)
+            } else if (d) {
+              // Yeni gün: dünün dengesini (yenen - yakılan - hedef) adaptasyona aktar, bugünü sıfırla
+              const prevConsumed = (d.meals || []).reduce((s, m) => s + (m.calories || 0), 0)
+              const lastTarget = Number(data[LAST_TARGET_KEY]) || prevConsumed
+              if (prevConsumed > 0) {
+                setYesterdayBalance(prevConsumed - (Number(d.burnedCal) || 0) - lastTarget)
+              }
+            }
+          } catch {}
+        }
+
+        if (data[WEIGHT_HIST_KEY]) {
+          try { setWeightHistory(JSON.parse(data[WEIGHT_HIST_KEY]) || []) } catch {}
+        }
+
       } catch (e) {
         console.log('Veriler yüklenirken hata:', e)
       } finally {
@@ -161,6 +196,38 @@ export function UserProvider({ children }) {
     if (lastStreakDate) AsyncStorage.setItem('fitkoc-streak-date', String(lastStreakDate))
     AsyncStorage.setItem('fitkoc-badges', JSON.stringify(unlockedBadges))
   }, [streak, lastStreakDate, unlockedBadges, isReady])
+
+  // Güne özel verileri (öğün/su/yakılan) tarih damgasıyla kaydet
+  useEffect(() => {
+    if (!isReady) return
+    AsyncStorage.setItem(DAILY_KEY, JSON.stringify({
+      date: todayStr(), meals, waterMl, burnedCal,
+    }))
+  }, [meals, waterMl, burnedCal, isReady])
+
+  // Güncel kalori hedefini kaydet (ertesi gün denge hesabı için)
+  useEffect(() => {
+    if (!isReady || !derived) return
+    AsyncStorage.setItem(LAST_TARGET_KEY, String(derived.targetCal))
+  }, [derived?.targetCal, isReady])
+
+  // Kilo değiştikçe geçmişe işle (grafik için)
+  useEffect(() => {
+    if (!isReady || !profile?.weightKg) return
+    setWeightHistory(prev => {
+      const today = todayStr()
+      const last = prev[prev.length - 1]
+      if (last && last.weight === profile.weightKg) return prev
+      let next
+      if (last && last.date === today) {
+        next = [...prev.slice(0, -1), { date: today, weight: profile.weightKg }]
+      } else {
+        next = [...prev, { date: today, weight: profile.weightKg }]
+      }
+      AsyncStorage.setItem(WEIGHT_HIST_KEY, JSON.stringify(next))
+      return next
+    })
+  }, [profile?.weightKg, isReady])
 
   // Streak Sıfırlama Kontrolü (App ilk açıldığında)
   useEffect(() => {
@@ -254,7 +321,12 @@ export function UserProvider({ children }) {
   }
 
   const resetProfile = async () => {
-    await AsyncStorage.multiRemove([STORAGE_KEY, LOG_KEY, PROG_KEY, CUSTOM_KEY, 'fitkoc-fatigue', 'fitkoc-balance', 'fitkoc-auth'])
+    await AsyncStorage.multiRemove([
+      STORAGE_KEY, LOG_KEY, PROG_KEY, CUSTOM_KEY,
+      'fitkoc-fatigue', 'fitkoc-balance', 'fitkoc-auth',
+      XP_KEY, 'fitkoc-streak', 'fitkoc-streak-date', 'fitkoc-badges',
+      DAILY_KEY, LAST_TARGET_KEY, WEIGHT_HIST_KEY,
+    ])
     setProfile(null)
     setMeals([])
     setWaterMl(0)
@@ -264,11 +336,19 @@ export function UserProvider({ children }) {
     setCustomProgramsState({})
     setFatigueMap({})
     setUserAuth(null)
+    setMuscleXP({})
+    setStreak(0)
+    setLastStreakDate(null)
+    setUnlockedBadges([])
+    setWeightHistory([])
+    setYesterdayBalance(0)
   }
 
   const addMeal = (meal) => setMeals((prev) => [...prev, { id: Date.now(), ...meal }])
+  const updateMeal = (id, patch) => setMeals((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)))
   const removeMeal = (id) => setMeals((prev) => prev.filter((m) => m.id !== id))
   const addWater = (ml) => setWaterMl((prev) => Math.max(0, prev + ml))
+  const addBurnedCal = (amount) => setBurnedCal((prev) => Math.max(0, prev + Math.round(amount || 0)))
   const addXP = async (muscles, amount) => {
     setMuscleXP(prev => {
       const next = { ...prev };
@@ -356,7 +436,8 @@ export function UserProvider({ children }) {
     profile, derived, consumed,
     meals, waterMl, burnedCal,
     completeOnboarding, updateProfile, resetProfile,
-    addMeal, removeMeal, addWater, resetWater, setBurnedCal,
+    addMeal, updateMeal, removeMeal, addWater, resetWater, setBurnedCal, addBurnedCal,
+    weightHistory,
     workoutLog, todaySession, lastSession,
     recordSet, clearTodaySets, oneRM, bestSet,
     selectedProgram, setSelectedProgram,

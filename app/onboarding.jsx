@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, ScrollView, Dimensions, KeyboardAvoidingView, Platform, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ArrowLeft, ChevronRight, Check, Flame, Scale, TrendingUp, Dumbbell, Heart } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useUser } from '../context/UserContext';
-import { calcBMI, bmiCategory, calcBMR, calcTDEE, targetCalories, calcMacros, idealWeightRange, GOALS } from '../lib/calc';
+import { useTheme } from '../context/ThemeContext';
+import { calcBMI, bmiCategory, calcBMR, calcTDEE, targetCalories, calcMacros, idealWeightRange, GOALS, GOAL_UI } from '../lib/calc';
 
 const { width } = Dimensions.get('window');
 const TOTAL_STEPS = 7;
@@ -54,6 +55,8 @@ function StepTransition({ children, step, prevStep }) {
 export default function OnboardingScreen() {
   const router = useRouter();
   const { completeOnboarding, logout } = useUser();
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [step, setStep] = useState(1);
   const [prevStep, setPrevStep] = useState(1);
   const [form, setForm] = useState({
@@ -94,11 +97,11 @@ export default function OnboardingScreen() {
       <View style={styles.header}>
         {step > 1 ? (
           <Pressable style={styles.backBtn} onPress={prevStepAction}>
-            <ArrowLeft size={24} color="#111" />
+            <ArrowLeft size={24} color={colors.text} />
           </Pressable>
         ) : (
           <Pressable style={styles.backBtn} onPress={() => { logout(); router.replace('/auth'); }}>
-            <ArrowLeft size={24} color="#111" />
+            <ArrowLeft size={24} color={colors.text} />
           </Pressable>
         )}
         <View style={styles.progressBar}>
@@ -127,6 +130,8 @@ export default function OnboardingScreen() {
 }
 
 function StepGender({ form, set, onNext }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Cinsiyetin nedir?</Text>
@@ -142,18 +147,21 @@ function StepGender({ form, set, onNext }) {
 }
 
 function StepHeight({ form, set, onNext }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Boyun kaç cm?</Text>
       <Text style={styles.subtitle}>Vücut kitle indeksini hesaplamak için boyunu bilmeliyiz.</Text>
-      
+
       <View style={{ marginTop: 32, marginBottom: 16 }}>
-        <SimpleSliderPicker 
+        <SimpleSliderPicker
           min={HEIGHT_MIN}
           max={HEIGHT_MAX}
-          selectedValue={form.heightCm} 
-          onValueChange={(val) => set('heightCm', val)} 
-          suffix="cm" 
+          selectedValue={form.heightCm}
+          onValueChange={(val) => set('heightCm', val)}
+          suffix="cm"
+          textColor={colors.text}
         />
       </View>
       <NextButton onPress={onNext} />
@@ -162,18 +170,21 @@ function StepHeight({ form, set, onNext }) {
 }
 
 function StepWeight({ form, set, onNext }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Kilon ne kadar?</Text>
       <Text style={styles.subtitle}>Sana özel kalori hedefini belirlemek için güncel kilonu girmelisin.</Text>
-      
+
       <View style={{ marginTop: 32, marginBottom: 16 }}>
-        <SimpleSliderPicker 
+        <SimpleSliderPicker
           min={WEIGHT_MIN}
           max={WEIGHT_MAX}
-          selectedValue={form.weightKg} 
-          onValueChange={(val) => set('weightKg', val)} 
-          suffix="kg" 
+          selectedValue={form.weightKg}
+          onValueChange={(val) => set('weightKg', val)}
+          suffix="kg"
+          textColor={colors.text}
         />
       </View>
       <NextButton onPress={onNext} />
@@ -182,18 +193,21 @@ function StepWeight({ form, set, onNext }) {
 }
 
 function StepAge({ form, set, onNext }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Kaç yaşındasın?</Text>
       <Text style={styles.subtitle}>Metabolizma hızı yaşa göre değişiklik gösterir.</Text>
-      
+
       <View style={{ marginTop: 32, marginBottom: 16 }}>
-        <SimpleSliderPicker 
+        <SimpleSliderPicker
           min={AGE_MIN}
           max={AGE_MAX}
-          selectedValue={form.age} 
-          onValueChange={(val) => set('age', val)} 
-          suffix="yaş" 
+          selectedValue={form.age}
+          onValueChange={(val) => set('age', val)}
+          suffix="yaş"
+          textColor={colors.text}
         />
       </View>
       <NextButton onPress={onNext} />
@@ -202,6 +216,8 @@ function StepAge({ form, set, onNext }) {
 }
 
 function StepActivity({ form, set, onNext }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Günlük hareket seviyen?</Text>
@@ -212,6 +228,7 @@ function StepActivity({ form, set, onNext }) {
         <Choice label="Hafif Hareketli" sub="Haftada 1-3 gün hafif egzersiz" active={form.activity === 'light'} onPress={() => set('activity', 'light')} />
         <Choice label="Orta Hareketli" sub="Haftada 3-5 gün egzersiz" active={form.activity === 'moderate'} onPress={() => set('activity', 'moderate')} />
         <Choice label="Çok Hareketli" sub="Haftada 6-7 gün ağır egzersiz" active={form.activity === 'active'} onPress={() => set('activity', 'active')} />
+        <Choice label="Sporcu" sub="Günde 2 antrenman / ağır fiziksel iş" active={form.activity === 'athlete'} onPress={() => set('activity', 'athlete')} />
       </View>
       <NextButton onPress={onNext} />
     </View>
@@ -219,17 +236,19 @@ function StepActivity({ form, set, onNext }) {
 }
 
 function StepGoal({ form, set, onNext }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <Text style={styles.title}>Uygulamadaki hedefin ne?</Text>
       <Text style={styles.subtitle}>Buna göre kalori ve makro programın özel olarak oluşturulacak.</Text>
       
       <View style={{ gap: 12, marginTop: 32 }}>
-        <GoalChoice icon={Flame} color="#FF3B30" bg="#FFEBEA" label="Kilo Vermek" sub="Kalori açığı ile yağ yakımı" active={form.goal === 'lose'} onPress={() => set('goal', 'lose')} />
-        <GoalChoice icon={Scale} color="#007AFF" bg="#E5F1FF" label="Kilomu Korumak" sub="Güncel formunu muhafaza et" active={form.goal === 'maintain'} onPress={() => set('goal', 'maintain')} />
-        <GoalChoice icon={TrendingUp} color="#34C759" bg="#EAF9ED" label="Kilo Almak" sub="Sağlıklı kilo artışı ve hacim" active={form.goal === 'gain'} onPress={() => set('goal', 'gain')} />
-        <GoalChoice icon={Dumbbell} color="#AF52DE" bg="#F7EBFC" label="Kas Kazanmak" sub="Temiz büyüme (Clean bulk)" active={form.goal === 'muscle'} onPress={() => set('goal', 'muscle')} />
-        <GoalChoice icon={Heart} color="#FF2D55" bg="#FFEAEF" label="Sağlıklı Beslenmek" sub="Genel sağlık ve zindelik" active={form.goal === 'healthy'} onPress={() => set('goal', 'healthy')} />
+        <GoalChoice icon={Flame} color={GOAL_UI.lose.color} bg={GOAL_UI.lose.soft} label="Kilo Vermek" sub="Kalori açığı ile yağ yakımı" active={form.goal === 'lose'} onPress={() => set('goal', 'lose')} />
+        <GoalChoice icon={Scale} color={GOAL_UI.maintain.color} bg={GOAL_UI.maintain.soft} label="Kilomu Korumak" sub="Güncel formunu muhafaza et" active={form.goal === 'maintain'} onPress={() => set('goal', 'maintain')} />
+        <GoalChoice icon={TrendingUp} color={GOAL_UI.gain.color} bg={GOAL_UI.gain.soft} label="Kilo Almak" sub="Sağlıklı kilo artışı ve hacim" active={form.goal === 'gain'} onPress={() => set('goal', 'gain')} />
+        <GoalChoice icon={Dumbbell} color={GOAL_UI.muscle.color} bg={GOAL_UI.muscle.soft} label="Kas Kazanmak" sub="Temiz büyüme (Clean bulk)" active={form.goal === 'muscle'} onPress={() => set('goal', 'muscle')} />
+        <GoalChoice icon={Heart} color={GOAL_UI.healthy.color} bg={GOAL_UI.healthy.soft} label="Sağlıklı Beslenmek" sub="Genel sağlık ve zindelik" active={form.goal === 'healthy'} onPress={() => set('goal', 'healthy')} />
       </View>
       <NextButton onPress={onNext} disabled={!form.goal} />
     </View>
@@ -237,6 +256,8 @@ function StepGoal({ form, set, onNext }) {
 }
 
 function StepResult({ form, bmi, cat, targetCal, macros, ideal, onFinish }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <View style={styles.stepContainer}>
       <View style={{ alignItems: 'center', marginVertical: 32 }}>
@@ -269,6 +290,8 @@ function StepResult({ form, bmi, cat, targetCal, macros, ideal, onFinish }) {
 
 // Reusable Components
 function Choice({ label, sub, active, onPress }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Pressable style={[styles.choice, active && styles.choiceActive]} onPress={onPress}>
       <View style={{ flex: 1 }}>
@@ -283,10 +306,12 @@ function Choice({ label, sub, active, onPress }) {
 }
 
 function GoalChoice({ icon: Icon, color, bg, label, sub, active, onPress }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Pressable style={[styles.goalChoice, active && { borderColor: color, backgroundColor: bg }]} onPress={onPress}>
-      <View style={[styles.goalIconWrap, { backgroundColor: active ? color : '#F2F2F7' }]}>
-        <Icon size={24} color={active ? '#FFF' : '#8E8E93'} />
+      <View style={[styles.goalIconWrap, { backgroundColor: active ? color : colors.iconBg }]}>
+        <Icon size={24} color={active ? '#FFF' : colors.textSub} />
       </View>
       <View style={{ flex: 1, marginLeft: 16 }}>
         <Text style={[styles.choiceLabel, active && { color: color }]}>{label}</Text>
@@ -300,6 +325,8 @@ function GoalChoice({ icon: Icon, color, bg, label, sub, active, onPress }) {
 }
 
 function NextButton({ onPress, disabled }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   return (
     <Pressable style={[styles.nextBtn, disabled && styles.nextBtnDisabled]} onPress={onPress} disabled={disabled}>
       <Text style={styles.nextBtnText}>Devam Et</Text>
@@ -308,40 +335,40 @@ function NextButton({ onPress, disabled }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
+const makeStyles = (colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, height: 60 },
   backBtn: { width: 44, height: 44, justifyContent: 'center', alignItems: 'center' },
-  progressBar: { flex: 1, height: 6, backgroundColor: '#E5E5EA', borderRadius: 3, marginHorizontal: 16, overflow: 'hidden' },
+  progressBar: { flex: 1, height: 6, backgroundColor: colors.border, borderRadius: 3, marginHorizontal: 16, overflow: 'hidden' },
   progressFill: { height: '100%', backgroundColor: '#FF6B35' },
-  
+
   scrollContent: { padding: 24, paddingBottom: 64 },
   stepContainer: { flex: 1 },
-  title: { fontSize: 28, fontWeight: '800', color: '#111', marginBottom: 8, letterSpacing: -0.5 },
-  subtitle: { fontSize: 15, color: '#888', lineHeight: 22 },
-  
+  title: { fontSize: 28, fontWeight: '800', color: colors.text, marginBottom: 8, letterSpacing: -0.5 },
+  subtitle: { fontSize: 15, color: colors.textSub, lineHeight: 22 },
+
   input: {
     fontSize: 48, fontWeight: '800', color: '#FF6B35', textAlign: 'center',
     marginTop: 48, paddingVertical: 16, borderBottomWidth: 2, borderBottomColor: '#FF6B35'
   },
-  
+
   choice: {
     flexDirection: 'row', alignItems: 'center', padding: 20,
-    borderWidth: 2, borderColor: '#E5E5EA', borderRadius: 16, backgroundColor: '#FFF'
+    borderWidth: 2, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.card
   },
   goalChoice: {
     flexDirection: 'row', alignItems: 'center', padding: 16,
-    borderWidth: 2, borderColor: '#E5E5EA', borderRadius: 16, backgroundColor: '#FFF'
+    borderWidth: 2, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.card
   },
   goalIconWrap: {
     width: 48, height: 48, borderRadius: 24, justifyContent: 'center', alignItems: 'center'
   },
-  choiceActive: { borderColor: '#FF6B35', backgroundColor: '#FFF8F5' },
-  choiceLabel: { fontSize: 17, fontWeight: '700', color: '#111' },
+  choiceActive: { borderColor: '#FF6B35', backgroundColor: 'rgba(255,107,53,0.08)' },
+  choiceLabel: { fontSize: 17, fontWeight: '700', color: colors.text },
   choiceLabelActive: { color: '#FF6B35' },
-  choiceSub: { fontSize: 13, color: '#888', marginTop: 4 },
-  
-  radioBtn: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#E5E5EA', justifyContent: 'center', alignItems: 'center' },
+  choiceSub: { fontSize: 13, color: colors.textSub, marginTop: 4 },
+
+  radioBtn: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: colors.border, justifyContent: 'center', alignItems: 'center' },
   radioBtnActive: { borderColor: '#FF6B35' },
   radioInner: { width: 12, height: 12, borderRadius: 6, backgroundColor: '#FF6B35' },
 
@@ -350,11 +377,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6B35', padding: 18, borderRadius: 32, marginTop: 48,
     shadowColor: '#FF6B35', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4
   },
-  nextBtnDisabled: { backgroundColor: '#E5E5EA', shadowOpacity: 0 },
+  nextBtnDisabled: { backgroundColor: colors.border, shadowOpacity: 0 },
   nextBtnText: { color: '#FFF', fontSize: 17, fontWeight: '700', marginRight: 8 },
 
-  resultCard: { backgroundColor: '#F7F7F9', padding: 20, borderRadius: 20, borderWidth: 1, borderColor: '#E5E5EA' },
-  resultRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#E5E5EA' },
-  resultLabel: { fontSize: 15, color: '#888', fontWeight: '500' },
-  resultValue: { fontSize: 15, color: '#111', fontWeight: '800' }
+  resultCard: { backgroundColor: colors.card, padding: 20, borderRadius: 20, borderWidth: 1, borderColor: colors.border },
+  resultRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: colors.border },
+  resultLabel: { fontSize: 15, color: colors.textSub, fontWeight: '500' },
+  resultValue: { fontSize: 15, color: colors.text, fontWeight: '800' }
 });

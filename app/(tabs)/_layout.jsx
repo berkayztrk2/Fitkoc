@@ -95,8 +95,8 @@ function CustomTabBar({ state, descriptors, navigation }) {
                 <Text
                   style={{
                     color: '#FF6B35',
-                    fontSize: 8,
-                    marginTop: 2,
+                    fontSize: 10,
+                    marginTop: 3,
                     fontWeight: '700',
                     letterSpacing: 0.2,
                   }}

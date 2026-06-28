@@ -2,10 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, Animated, StyleSheet, Platform } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useUser } from '../context/UserContext';
+import { useTheme } from '../context/ThemeContext';
 import { Shield } from 'lucide-react-native';
 
 export default function IndexScreen() {
   const { profile, isReady, isAuth } = useUser();
+  const { colors, isDark } = useTheme();
   const [showSplash, setShowSplash] = useState(true);
   
   // Animasyon değerleri
@@ -55,17 +57,17 @@ export default function IndexScreen() {
   // Eğer splash ekranı gösterimde ise VEYA veriler yüklenmediyse splash'i render et
   if (showSplash || !isReady) {
     return (
-      <View style={styles.splashContainer}>
-        <Animated.View 
+      <View style={[styles.splashContainer, { backgroundColor: colors.background }]}>
+        <Animated.View
           style={[
-            styles.logoContainer, 
+            styles.logoContainer,
             { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }
           ]}
         >
           <View style={styles.iconBg}>
             <Shield size={48} color="#FF6B35" />
           </View>
-          <Text style={styles.splashTitle}>FitKoç</Text>
+          <Text style={[styles.splashTitle, { color: colors.text }]}>FitKoç</Text>
           <Text style={styles.splashSubtitle}>Senin hedefin, senin dönüşümün.</Text>
         </Animated.View>
       </View>

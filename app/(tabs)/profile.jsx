@@ -11,14 +11,15 @@ import HeroMuscleMap from '../../components/HeroMuscleMap';
 import PremiumModal from '../../components/PremiumModal';
 import EditProfileModal from '../../components/EditProfileModal';
 import RemindersModal from '../../components/RemindersModal';
+import ApiKeyModal from '../../components/ApiKeyModal';
 import FadeInDown from '../../components/FadeInDown';
-import { Bell } from 'lucide-react-native';
+import { Bell, KeyRound } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { profile, derived, resetProfile, muscleXP, addXP, streak, unlockedBadges } = useUser();
+  const { profile, derived, resetProfile, muscleXP, streak, unlockedBadges } = useUser();
   const { isDark, colors, themeMode, changeTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState('stats'); // 'stats' | 'hero'
@@ -26,6 +27,7 @@ export default function ProfileScreen() {
   const [showPremium, setShowPremium] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [showReminders, setShowReminders] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
   
   // Modals for charts
   const [selectedDay, setSelectedDay] = useState(null);
@@ -75,7 +77,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { backgroundColor: colors.card }]}>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Profil</Text>
-        <Pressable style={[styles.settingsBtn, { backgroundColor: colors.iconBg }]}>
+        <Pressable style={[styles.settingsBtn, { backgroundColor: colors.iconBg }]} onPress={() => setShowEditProfile(true)}>
           <Settings size={20} color={colors.text} />
         </Pressable>
       </View>
@@ -93,7 +95,7 @@ export default function ProfileScreen() {
             </View>
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Text style={styles.userName}>FitKoç Üyesi</Text>
+                <Text style={styles.userName}>{profile.name || 'FitKoç Üyesi'}</Text>
                 <Crown size={16} color="#FFD700" />
               </View>
               <Text style={styles.goalText}>Hedef: {profile.goalLabel}</Text>
@@ -210,21 +212,6 @@ export default function ProfileScreen() {
               
               <HeroMuscleMap muscleXP={muscleXP} gender={profile.gender} isDark={isDark} />
             </FadeInDown>
-
-            <FadeInDown index={3} style={[styles.card, { backgroundColor: colors.card }]}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Demo Kontrolleri (XP Test)</Text>
-              <Text style={{color: colors.textSub, fontSize: 13, marginBottom: 12}}>
-                Bu butonlarla sahte antrenman ekleyip modelin kızardığını test edebilirsin (Uygulamayı yenileyene kadar geçerlidir).
-              </Text>
-              <View style={{flexDirection: 'row', gap: 8, flexWrap: 'wrap'}}>
-                <Pressable style={styles.demoBtn} onPress={() => { addXP(['f_chest_l', 'f_chest_r', 'f_bicep_l', 'f_bicep_r'], 500); Alert.alert("Başarılı", "Göğüs ve Kol bölgesine 500 XP eklendi!"); }}>
-                  <Text style={styles.demoBtnText}>+500 Göğüs/Kol XP</Text>
-                </Pressable>
-                <Pressable style={[styles.demoBtn, { backgroundColor: '#FF3B3B' }]} onPress={() => { addXP(['f_chest_l', 'f_chest_r', 'f_bicep_l', 'f_bicep_r'], -5000); Alert.alert("Sıfırlandı", "Göğüs ve Kol XP sıfırlandı!"); }}>
-                  <Text style={styles.demoBtnText}>Sıfırla</Text>
-                </Pressable>
-              </View>
-            </FadeInDown>
           </View>
         )}
 
@@ -270,10 +257,19 @@ export default function ProfileScreen() {
               <Text style={[styles.settingItemText, { color: colors.text }]}>Hatırlatmalar</Text>
             </View>
           </Pressable>
-          <Pressable style={[styles.settingItem, { borderBottomColor: colors.border }]} onPress={() => Alert.alert("Cihaz Eşleşti", "Apple Health ve Fitbit verileri başarıyla senkronize edildi.")}>
+          <Pressable style={[styles.settingItem, { borderBottomColor: colors.border }]} onPress={() => setShowApiKey(true)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
+              <KeyRound size={20} color={colors.text} />
+              <Text style={[styles.settingItemText, { color: colors.text }]}>Gemini API Anahtarı</Text>
+            </View>
+          </Pressable>
+          <Pressable style={[styles.settingItem, { borderBottomColor: colors.border }]} onPress={() => Alert.alert("Yakında", "Apple Health ve Fitbit entegrasyonu geliştirme aşamasında. Yakında aktif olacak.")}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 }}>
               <Watch size={20} color={colors.text} />
               <Text style={[styles.settingItemText, { color: colors.text }]}>Cihaz Entegrasyonu (Fitbit vb.)</Text>
+              <View style={{ backgroundColor: colors.iconBg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSub }}>Yakında</Text>
+              </View>
             </View>
           </Pressable>
           <Pressable style={[styles.settingItem, { borderBottomColor: colors.border }]} onPress={() => setShowPremium(true)}>
@@ -291,6 +287,7 @@ export default function ProfileScreen() {
       <PremiumModal visible={showPremium} onClose={() => setShowPremium(false)} />
       <EditProfileModal visible={showEditProfile} onClose={() => setShowEditProfile(false)} />
       <RemindersModal visible={showReminders} onClose={() => setShowReminders(false)} />
+      <ApiKeyModal visible={showApiKey} onClose={() => setShowApiKey(false)} />
       <DayDetailSheet data={selectedDay} onClose={() => setSelectedDay(null)} />
       <WeekDetailSheet data={selectedWeek} onClose={() => setSelectedWeek(null)} />
 
@@ -336,9 +333,6 @@ const styles = StyleSheet.create({
   macroCol: { alignItems: 'center' },
   macroVal: { fontSize: 20, fontWeight: '800' },
   macroName: { fontSize: 12, marginTop: 4 },
-
-  demoBtn: { backgroundColor: '#00AAFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16 },
-  demoBtnText: { color: '#FFF', fontSize: 12, fontWeight: 'bold' },
 
   settingsList: { borderRadius: 24, paddingHorizontal: 20, marginTop: 8 },
   settingItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1 },

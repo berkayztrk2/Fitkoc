@@ -6,10 +6,14 @@
     "scheme": "fitkoc",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fitkoc.app"
+      "bundleIdentifier": "com.fitkoc.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Yediğin yemeklerin fotoğrafını çekip AI ile kalori analizi yapabilmen için kameraya erişim gerekiyor.",
+        "NSPhotoLibraryUsageDescription": "Yemek fotoğrafı seçebilmen ve profil fotoğrafını ayarlayabilmen için galeriye erişim gerekiyor."
+      }
     },
     "android": {
       "package": "com.fitkoc.app",
@@ -30,6 +34,24 @@
         "expo-widgets",
         {
           "frequentUpdates": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Yediğin yemeklerin fotoğrafını çekip AI ile kalori analizi yapabilmen için kameraya erişim gerekiyor."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Yemek fotoğrafı seçebilmen ve profil fotoğrafını ayarlayabilmen için galeriye erişim gerekiyor."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#FF6B35"
         }
       ]
     ],

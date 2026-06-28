@@ -50,17 +50,28 @@ cd Fitkoc
 # 3. Bağımlılıkları yükleyin
 npm install
 
-# 4. Uygulamayı başlatın (Expo)
+# 4. (Opsiyonel) AI özellikleri için Gemini API anahtarını tanımlayın
+#    .env.example dosyasını .env olarak kopyalayıp anahtarınızı girin
+cp .env.example .env
+
+# 5. Uygulamayı başlatın (Expo)
 npx expo start
 ```
 *Not: İOS emülatörü için terminalde (Mac'te) `npx expo run:ios`, Android emülatörü için `npx expo run:android` kullanabilirsiniz.*
+
+### 🔑 AI Özellikleri (API Anahtarı)
+Öğün fotoğrafı analizi, AI koç sohbeti ve tarif oluşturucu **Google Gemini API** kullanır. İki yoldan anahtar tanımlayabilirsiniz:
+1. **Uygulama içinden:** Profil → Ayarlar → **Gemini API Anahtarı** (cihazda saklanır, en kolayı).
+2. **Build zamanında:** Proje kökünde `.env` dosyasına `EXPO_PUBLIC_GEMINI_API_KEY=...` ekleyin.
+
+Ücretsiz anahtarı [Google AI Studio](https://aistudio.google.com/app/apikey) üzerinden alabilirsiniz.
 
 ---
 
 ## 🛠️ Kullanılan Teknolojiler
 - **Framework:** React Native & Expo Router
 - **State Yönetimi:** React Context API & AsyncStorage (Yerel Hafıza)
-- **Yapay Zeka:** Anthropic Claude API (Görsel ve Metin İşleme)
+- **Yapay Zeka:** Google Gemini API (`gemini-2.5-flash` — görsel ve metin işleme)
 - **İkonlar:** Lucide React Native
 - **Grafikler:** React Native SVG / Expo uyumlu grafik kütüphaneleri
 

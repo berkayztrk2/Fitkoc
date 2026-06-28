@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useUser } from '../context/UserContext';
 import { useTheme } from '../context/ThemeContext';
@@ -16,20 +16,31 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const isValidEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+
   const handleSubmit = () => {
-    if (!email) return;
+    if (!isValidEmail(email)) {
+      Alert.alert('Geçersiz e-posta', 'Lütfen geçerli bir e-posta adresi gir.');
+      return;
+    }
+
+    if (mode === 'reset') {
+      Alert.alert('Bağlantı Gönderildi', 'Şifre sıfırlama bağlantısı e-postanıza gönderildi!');
+      setMode('login');
+      return;
+    }
+
+    if (!password || password.length < 6) {
+      Alert.alert('Şifre çok kısa', 'Şifren en az 6 karakter olmalı.');
+      return;
+    }
 
     if (mode === 'login') {
-      if (!password) return;
-      login(email, password);
-      router.replace('/');
-    } else if (mode === 'register') {
-      if (!password) return;
-      register(email, password);
+      login(email.trim(), password);
       router.replace('/');
     } else {
-      alert('Şifre sıfırlama bağlantısı e-postanıza gönderildi!');
-      setMode('login');
+      register(email.trim(), password);
+      router.replace('/');
     }
   };
 

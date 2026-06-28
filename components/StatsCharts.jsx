@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Modal } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Modal, TextInput } from 'react-native';
 import { BarChart, LineChart } from 'react-native-gifted-charts';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Dumbbell, Flame, X, TrendingDown, TrendingUp } from 'lucide-react-native';
 import { useUser } from '../context/UserContext';
 import { useTheme } from '../context/ThemeContext';
+import { EXERCISES } from '../data/exercises';
 
 const DAYS_TR = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const MONTHS_TR = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
@@ -250,16 +251,74 @@ export function MonthlyChart({ onWeekTap }) {
 }
 
 export function WeightProgressChart() {
-  const { profile } = useUser();
+  const { profile, weightHistory, updateProfile } = useUser();
   const { colors } = useTheme();
+  const [weightInput, setWeightInput] = useState('');
 
-  // Fake history based on current weight
-  const lineData = [
-    { value: profile.weightKg + 2.5, label: 'May' },
-    { value: profile.weightKg + 1.2, label: 'Haz' },
-    { value: profile.weightKg + 0.5, label: 'Tem' },
-    { value: profile.weightKg, label: 'Ağu', dataPointText: `${profile.weightKg}kg` },
-  ];
+  const saveWeight = () => {
+    const val = parseFloat(String(weightInput).replace(',', '.'));
+    if (!val || val < 20 || val > 400) return;
+    updateProfile({ weightKg: Math.round(val * 10) / 10 });
+    setWeightInput('');
+  };
+
+  // Bugünkü kilonu hızlıca gir → grafiğe işlensin
+  const entry = (
+    <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', backgroundColor: colors.iconBg, borderRadius: 12, paddingHorizontal: 12, height: 44, borderWidth: 1, borderColor: colors.border }}>
+        <TextInput
+          style={{ flex: 1, fontSize: 16, fontWeight: '700', color: colors.text }}
+          placeholder={`Bugünkü kilon (${profile.weightKg} kg)`}
+          placeholderTextColor={colors.textSub}
+          keyboardType="decimal-pad"
+          value={weightInput}
+          onChangeText={setWeightInput}
+          onSubmitEditing={saveWeight}
+        />
+        <Text style={{ color: colors.textSub, fontWeight: '700' }}>kg</Text>
+      </View>
+      <Pressable
+        style={{ backgroundColor: weightInput ? '#00AAFF' : colors.border, paddingHorizontal: 18, height: 44, borderRadius: 12, justifyContent: 'center' }}
+        onPress={saveWeight}
+        disabled={!weightInput}
+      >
+        <Text style={{ color: '#FFF', fontWeight: '800' }}>Kaydet</Text>
+      </Pressable>
+    </View>
+  );
+
+  // Gerçek kilo geçmişi (son 6 kayıt). Tek kayıt varsa onu göster.
+  const history = (weightHistory && weightHistory.length > 0)
+    ? weightHistory
+    : [{ date: new Date().toISOString().slice(0, 10), weight: profile.weightKg }];
+  const recent = history.slice(-6);
+
+  if (recent.length < 2) {
+    return (
+      <View style={styles.chartContainer}>
+        <View style={styles.navRow}>
+          <Text style={[styles.navLabel, { color: colors.text }]}>Vücut Ağırlığı Gelişimi</Text>
+        </View>
+        {entry}
+        <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+          <Text style={{ fontSize: 32, fontWeight: '800', color: '#00AAFF' }}>{profile.weightKg} kg</Text>
+          <Text style={{ color: colors.textSub, fontSize: 13, marginTop: 8, textAlign: 'center' }}>
+            Kilonu yukarıdan girdikçe gelişim grafiğin burada oluşacak.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const lineData = recent.map((h, i) => {
+    const d = new Date(h.date);
+    const label = `${d.getDate()} ${MONTHS_TR[d.getMonth()]}`;
+    return {
+      value: h.weight,
+      label,
+      ...(i === recent.length - 1 ? { dataPointText: `${h.weight}kg` } : {}),
+    };
+  });
   const maxW = Math.max(...lineData.map(d => d.value));
   const minW = Math.min(...lineData.map(d => d.value));
   const yOffset = Math.max(0, Math.floor(minW) - 2);
@@ -270,6 +329,7 @@ export function WeightProgressChart() {
       <View style={styles.navRow}>
         <Text style={[styles.navLabel, { color: colors.text }]}>Vücut Ağırlığı Gelişimi</Text>
       </View>
+      {entry}
       <View style={styles.barChartWrapper}>
         <LineChart
           data={lineData}
@@ -298,25 +358,74 @@ export function WeightProgressChart() {
   );
 }
 
+const estimate1RM = (weight, reps) => {
+  if (!weight || !reps) return 0;
+  return Math.round(weight * (1 + reps / 30));
+};
+
 export function OneRMChart() {
+  const { workoutLog } = useUser();
   const { colors } = useTheme();
 
-  // Fake 1RM history for Bench Press
-  const lineData = [
-    { value: 60, label: '1.Hf' },
-    { value: 65, label: '2.Hf' },
-    { value: 72, label: '3.Hf' },
-    { value: 80, label: '4.Hf', dataPointText: '80kg' },
-  ];
-  const max1rm = 80;
-  const min1rm = 60;
-  const offset1rm = 50;
-  const maxValue1rm = 40;
+  // En çok takip edilen (ağırlıklı set girilmiş) egzersizi seç ve 1RM geçmişini çıkar
+  const { exId, points } = useMemo(() => {
+    let bestExId = null;
+    let bestSessions = 0;
+    for (const [id, sessions] of Object.entries(workoutLog || {})) {
+      const weighted = sessions.filter(s => s.sets?.some(set => (set.weight || 0) > 0));
+      if (weighted.length > bestSessions) {
+        bestSessions = weighted.length;
+        bestExId = id;
+      }
+    }
+    if (!bestExId) return { exId: null, points: [] };
+
+    const sessions = (workoutLog[bestExId] || [])
+      .filter(s => s.sets?.some(set => (set.weight || 0) > 0))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-6);
+
+    const pts = sessions.map(s => {
+      const best = Math.max(...s.sets.map(set => estimate1RM(set.weight, set.reps)));
+      return { date: s.date, value: best };
+    });
+    return { exId: bestExId, points: pts };
+  }, [workoutLog]);
+
+  const exName = exId ? (EXERCISES[exId]?.name || exId) : null;
+
+  if (points.length < 2) {
+    return (
+      <View style={styles.chartContainer}>
+        <View style={styles.navRow}>
+          <Text style={[styles.navLabel, { color: colors.text }]}>Tahmini 1RM Gelişimi</Text>
+        </View>
+        <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+          <Text style={{ color: colors.textSub, fontSize: 13, textAlign: 'center' }}>
+            Antrenmanlarda ağırlık girdikçe en çok çalıştığın hareketin tahmini 1RM gelişimi burada görünecek.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  const lineData = points.map((p, i) => {
+    const d = new Date(p.date);
+    return {
+      value: p.value,
+      label: `${d.getDate()} ${MONTHS_TR[d.getMonth()]}`,
+      ...(i === points.length - 1 ? { dataPointText: `${p.value}kg` } : {}),
+    };
+  });
+  const maxV = Math.max(...lineData.map(d => d.value));
+  const minV = Math.min(...lineData.map(d => d.value));
+  const offset1rm = Math.max(0, Math.floor(minV) - 5);
+  const maxValue1rm = Math.ceil(maxV - offset1rm + 5);
 
   return (
     <View style={styles.chartContainer}>
       <View style={styles.navRow}>
-        <Text style={[styles.navLabel, { color: colors.text }]}>Tahmini 1RM (Bench Press)</Text>
+        <Text style={[styles.navLabel, { color: colors.text }]}>Tahmini 1RM ({exName})</Text>
       </View>
       <View style={styles.barChartWrapper}>
         <LineChart
@@ -324,7 +433,6 @@ export function OneRMChart() {
           maxValue={maxValue1rm}
           yAxisOffset={offset1rm}
           noOfSections={4}
-          stepValue={10}
           width={280}
           height={140}
           thickness={4}
