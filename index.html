@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitKoç - Bilimsel Kişisel Fitness & Akıllı Ağırlık Koçu</title>
+  <meta name="description" content="FitKoç ile vücut ağırlığına, boyuna ve aktivite seviyene özel kaldırabileceğin ağırlıkları bilimsel olarak hesapla. Dinamik set kalibrasyonu ile sınırlarını aş.">
+  <meta name="keywords" content="fitness, ağırlık hesaplayıcı, 1rm hesaplama, güç analizi, progresif aşırı yükleme, fitkoç, antrenman koçu">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="FitKoç - Bilimsel Güç & Ağırlık Analizörü">
+  <meta property="og:description" content="Kişiye özel başlangıç ağırlığı tespiti ve canlı set kalibrasyon sistemiyle antrenmanlarını bir üst seviyeye taşı.">
+  <meta property="og:type" content="website">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- BACKGROUND GLOWS -->
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <!-- NAVIGATION -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#" class="nav-brand">
+        <div class="brand-icon">⚡</div>
+        <span class="brand-text">Fit<span class="highlight">Koç</span></span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#features">Özellikler</a>
+        <a href="#strength-engine" class="active-link">🔥 Bilimsel Güç Analizörü</a>
+        <a href="#calculator">Canlı Test Et</a>
+        <a href="#how-it-works">Nasıl Çalışır?</a>
+        <a href="#faq">SSS</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a href="#download" class="btn btn-primary btn-sm">Uygulamayı İndir</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero-section">
+    <div class="container hero-container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span>YENİ: BİLİMSEL GÜÇ & KALİBRASYON MOTORU</span>
+        </div>
+
+        <h1 class="hero-title">
+          Hangi ağırlıkla çalışman gerektiğini <span class="gradient-text">tahmin etme.</span> Bilimsel analiz ile <span class="highlight-text">kesinleştir.</span>
+        </h1>
+
+        <p class="hero-desc">
+          FitKoç; cinsiyetin, boyun, kilon ve aktivite seviyeni analiz ederek tüm hareketlerde kaldırabileceğin başlangıç ağırlıklarını ve 1RM potansiyelini hesaplar. Set içi canlı kalibrasyon ile sakatlığı önler, gelişimi garantiler.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#calculator" class="btn btn-primary btn-lg pulse-btn">
+            <span>⚡ Gücünü Hemen Test Et</span>
+          </a>
+          <a href="#strength-engine" class="btn btn-secondary btn-lg">
+            <span>Nasıl Çalışır?</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+        <!-- Social Proof Stats -->
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">20+</span>
+            <span class="stat-lbl">Temel Egzersiz</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">%98.4</span>
+            <span class="stat-lbl">Kalibrasyon İsabeti</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">Epley & Brzycki</span>
+            <span class="stat-lbl">Bilimsel Standart</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hero Visual / App Mockup Preview -->
+      <div class="hero-mockup-wrapper">
+        <div class="phone-frame">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <!-- Mockup Header -->
+            <div class="mock-top">
+              <span class="mock-badge">BİLİMSEL GÜÇ SİSTEMİ</span>
+              <h3>Bench Press Analizi</h3>
+              <p>Erkek · 78 kg · 180 cm · Orta Seviye</p>
+            </div>
+
+            <!-- 1RM Gauge Card -->
+            <div class="mock-card">
+              <div class="mock-card-header">
+                <span class="mock-eyebrow">TAHMİNİ GÜÇ KAPASİTESİ</span>
+                <span class="level-pill green">Orta Seviye</span>
+              </div>
+              <div class="mock-weight-row">
+                <div class="mock-big-num">82.5 <span class="unit">kg 1RM</span></div>
+                <div class="mock-next-target">Hedef: <strong>110 kg</strong></div>
+              </div>
+              <div class="mock-progress-track">
+                <div class="mock-progress-fill" style="width: 68%;"></div>
+              </div>
+              <div class="mock-standards-row">
+                <span>Başlangıç<br>39kg</span>
+                <span>Gelişen<br>58kg</span>
+                <span class="active-std">Orta<br>82kg</span>
+                <span>İleri<br>109kg</span>
+              </div>
+            </div>
+
+            <!-- Target Working Weight Box -->
+            <div class="mock-card highlight-card">
+              <div class="mock-tab-row">
+                <span class="active-tab">8-10 Tekrar (Kas)</span>
+                <span>3-5 Tekrar (Kuvvet)</span>
+              </div>
+              <div class="mock-target-val">
+                <div>
+                  <span class="mock-target-lbl">Önerilen Çalışma Ağırlığı</span>
+                  <div class="mock-weight-large">62.5 kg</div>
+                </div>
+                <span class="mock-intensity">%75 1RM</span>
+              </div>
+            </div>
+
+            <!-- Live Calibration Bubble -->
+            <div class="mock-bubble">
+              <div class="bubble-icon">🎯</div>
+              <div>
+                <strong>Canlı Kalibrasyon:</strong>
+                <p>62.5 kg ile 12 tekrar çıkardın! Gücün arttı, bir sonraki set için <strong>+5 kg (67.5 kg)</strong> öneriliyor.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE LIVE CALCULATOR WIDGET -->
+  <section class="calculator-section" id="calculator">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-badge">İNTERAKTİF TEST LABORATUVARI</div>
+        <h2 class="section-title">Kendi Güç Potansiyelini <span class="gradient-text">Canlı Hesapla</span></h2>
+        <p class="section-desc">
+          Bilgilerini seç ve temel hareketlerde kaldırman gereken bilimsel başlangıç kilolarını hemen keşfet.
+        </p>
+      </div>
+
+      <div class="calc-card">
+        <div class="calc-inputs-grid">
+          <!-- Cinsiyet -->
+          <div class="input-group">
+            <label>Cinsiyet</label>
+            <div class="pill-selector" id="genderSelector">
+              <button class="pill-btn active" data-val="male">Erkek</button>
+              <button class="pill-btn" data-val="female">Kadın</button>
+            </div>
+          </div>
+
+          <!-- Kilo -->
+          <div class="input-group">
+            <label>Vücut Ağırlığın (<span id="weightDisplay">75</span> kg)</label>
+            <input type="range" id="weightSlider" min="45" max="130" value="75" class="custom-slider">
+          </div>
+
+          <!-- Boy -->
+          <div class="input-group">
+            <label>Boyun (<span id="heightDisplay">178</span> cm)</label>
+            <input type="range" id="heightSlider" min="150" max="205" value="178" class="custom-slider">
+          </div>
+
+          <!-- Aktivite -->
+          <div class="input-group">
+            <label>Aktivite Seviyen</label>
+            <select id="activitySelect" class="custom-select">
+              <option value="sedentary">Hareketsiz / Masa Başı (0.88x)</option>
+              <option value="light">Hafif Hareketli (0.95x)</option>
+              <option value="moderate" selected>Orta Hareketli (Haftada 3-4 gün spor)</option>
+              <option value="active">Çok Hareketli (1.12x)</option>
+              <option value="athlete">Sporcu / Atletik (1.22x)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Egzersiz Seçici -->
+        <div class="exercise-chips-wrapper">
+          <label class="section-sublabel">Analiz Edilecek Egzersizi Seç:</label>
+          <div class="exercise-chips" id="exerciseChips">
+            <button class="chip active" data-ex="bench">🫁 Bench Press</button>
+            <button class="chip" data-ex="squat">🦵 Squat (Barbell)</button>
+            <button class="chip" data-ex="deadlift">⚡ Deadlift</button>
+            <button class="chip" data-ex="ohp">🪖 Military Press</button>
+            <button class="chip" data-ex="latPulldown">🪢 Lat Pulldown</button>
+            <button class="chip" data-ex="legPress">🚜 Leg Press</button>
+            <button class="chip" data-ex="curl">💪 Bicep Curl</button>
+          </div>
+        </div>
+
+        <!-- SONUÇ EKRANI (DİNAMİK) -->
+        <div class="calc-results-panel">
+          <!-- 1RM & Güç Seviyesi -->
+          <div class="result-header-row">
+            <div>
+              <span class="calc-label">TAHMİNİ 1RM KAPASİTEN</span>
+              <div class="big-result-num" id="calcOneRM">58.5 <span class="unit-kg">kg</span></div>
+            </div>
+            <div class="user-level-box" id="calcLevelBadge">
+              <span class="badge-icon">🏆</span>
+              <span class="badge-name" id="calcLevelName">Gelişen Seviye</span>
+            </div>
+          </div>
+
+          <!-- Hedefe Göre Ağırlık Kartları -->
+          <div class="rep-targets-grid">
+            <div class="rep-target-card">
+              <span class="rep-type">💥 KUVVET (3-5 TEKRAR)</span>
+              <div class="rep-weight" id="calcStrengthWeight">50 kg</div>
+              <span class="rep-pct">%85-88 1RM</span>
+            </div>
+
+            <div class="rep-target-card featured">
+              <div class="feature-tag">ÖNERİLEN</div>
+              <span class="rep-type">🎯 KAS BÜYÜMESİ (8-10 TEKRAR)</span>
+              <div class="rep-weight" id="calcHypertrophyWeight">42.5 kg</div>
+              <span class="rep-pct">%72-75 1RM</span>
+            </div>
+
+            <div class="rep-target-card">
+              <span class="rep-type">⚡ DAYANIKLILIK (12-15 TEKRAR)</span>
+              <div class="rep-weight" id="calcEnduranceWeight">35 kg</div>
+              <span class="rep-pct">%60-64 1RM</span>
+            </div>
+          </div>
+
+          <!-- Canlı Kalibrasyon Simülatörü -->
+          <div class="live-test-simulator">
+            <div class="sim-header">
+              <span class="sim-title">⚡ Canlı Test Simülatörü</span>
+              <span class="sim-sub">Bu ağırlıkla antrenman yaptığında ne olacağını test et:</span>
+            </div>
+            <div class="sim-buttons-grid">
+              <button class="sim-btn sim-btn-success" data-scenario="light">
+                <span>💪 13+ Tekrar Yaptım</span>
+                <small>Ağırlık hafif geldi</small>
+              </button>
+              <button class="sim-btn sim-btn-perfect" data-scenario="perfect">
+                <span>🎯 10 Tekrar Yaptım</span>
+                <small>Hedefe tam isabet</small>
+              </button>
+              <button class="sim-btn sim-btn-warn" data-scenario="heavy">
+                <span>⚠️ 6 Tekrar Yapabildim</span>
+                <small>Biraz ağır geldi</small>
+              </button>
+              <button class="sim-btn sim-btn-danger" data-scenario="fail">
+                <span>⛔ 2 Tekrar / Kaldıramadım</span>
+                <small>Aşırı ağır geldi</small>
+              </button>
+            </div>
+
+            <div class="sim-result-box" id="simResultBox">
+              <div class="sim-result-status" id="simStatus">Kalibre Edildi 🎯</div>
+              <p class="sim-result-msg" id="simMsg">Harika! Çalışma ağırlığın mükemmel kalibre edildi. Bir sonraki seans için +2.5 kg artış planlandı.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES DEEP DIVE -->
+  <section class="features-section" id="features">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-badge">AKILLI ÖZELLİKLER</div>
+        <h2 class="section-title">FitKoç Neden Sıradan Fitness Uygulamalarından <span class="gradient-text">Farklı?</span></h2>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon bg-orange">⚡</div>
+          <h3 class="feature-title">Bilimsel Başlangıç Ağırlığı</h3>
+          <p class="feature-desc">
+            Salona ilk adımını attığında hangi dambılı alacağını düşünmene gerek yok. Boyuna, kilona ve cinsiyetine göre ilk gün kaldırman gereken ağırlık hazır.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon bg-blue">🔄</div>
+          <h3 class="feature-title">Adaptif Set Kalibrasyonu</h3>
+          <p class="feature-desc">
+            Hedeflenen tekrar sayısına ulaşamazsan sistem sakatlığı önlemek için anında ağırlığı düşürür; fazla tekrar yaparsan bir sonraki set için otomatik artırır.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon bg-purple">🔥</div>
+          <h3 class="feature-title">Kademeli Isınma Piramidi</h3>
+          <p class="feature-desc">
+            Ağır setlere girmeden önce sinir sistemini ve kas liflerini hazırlayan özel 3 basamaklı dinamik ısınma ağırlıkları.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon bg-green">📈</div>
+          <h3 class="feature-title">Progresif Aşırı Yükleme</h3>
+          <p class="feature-desc">
+            Haftalık hacmini ve güç eğrini takip ederek plato evresine takılmadan her seans kas gelişimini sürdürmeni sağlar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS STEP BY STEP -->
+  <section class="how-section" id="how-it-works">
+    <div class="container">
+      <div class="section-header text-center">
+        <div class="section-badge">KUSURSUZ AKIŞ</div>
+        <h2 class="section-title">3 Basit Adımda <span class="gradient-text">Akıllı Güç Gelişimi</span></h2>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">01</div>
+          <h3>Fizyolojik Profil Analizi</h3>
+          <p>Cinsiyetin, boy/kilo oranın, yaşın ve metabolik aktivite seviyen sisteme yüklenir.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">02</div>
+          <h3>Hedefe Göre Ağırlık Üretimi</h3>
+          <p>Kuvvet, Hipertrofi veya Dayanıklılık hedefine göre antrenmanındaki tüm hareketlerin set ağırlıkları otomatik doldurulur.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">03</div>
+          <h3>Canlı Geri Bildirim & Kalibrasyon</h3>
+          <p>Yaptığın her sette sistem seni dinler, ağırlığı anlık optimize eder ve gelişim hızını maksimuma çıkarır.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA DOWNLOAD SECTION -->
+  <section class="cta-section" id="download">
+    <div class="container">
+      <div class="cta-card">
+        <div class="cta-content">
+          <span class="cta-badge">HEMEN BAŞLA</span>
+          <h2 class="cta-title">Kendi Potansiyelini Keşfetmeye Hazır mısın?</h2>
+          <p class="cta-desc">
+            FitKoç ile tahminlere son ver. Bilimsel yapay zeka antrenman koçun cebinde.
+          </p>
+          <div class="download-buttons">
+            <a href="#" class="store-btn">
+              <span class="store-icon"></span>
+              <div class="store-text">
+                <small>App Store'dan</small>
+                <strong>İndirin</strong>
+              </div>
+            </a>
+            <a href="#" class="store-btn">
+              <span class="store-icon">▶</span>
+              <div class="store-text">
+                <small>Google Play'den</small>
+                <strong>İndirin</strong>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div class="footer-brand">
+        <div class="brand-icon">⚡</div>
+        <span class="brand-text">Fit<span class="highlight">Koç</span></span>
+        <p class="footer-copy">© 2026 FitKoç Inc. Tüm hakları saklıdır.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#features">Özellikler</a>
+        <a href="#calculator">Güç Analizörü</a>
+        <a href="#how-it-works">Nasıl Çalışır?</a>
+        <a href="privacy.html">Gizlilik Politikası</a>
+        <a href="#download">İndir</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
